@@ -1,14 +1,17 @@
+import { useState } from 'react';
 import './App.css';
 import useInterval from './hooks/useInterval';
+import { MINER_PUBLIC_KEY } from './frontend_config'
 
 function App() {
 
+  const [minerBalance, setMinerBalance] = useState(0);
+
   useInterval(() => {
-    const address = "049a1bad614bcd85b5f5c36703ebe94adbfef7af163b39a9dd3ddbc4f286820031dfcb3cd9b3d2fcbaec56ff95b0178b75d042968462fbfe3d604e02357125ded5";
 
     const params = {
       method: "getBalance",
-      params: [address],
+      params: [MINER_PUBLIC_KEY],
       jsonrpc: "2.0",
       id: 1
     }
@@ -23,7 +26,7 @@ function App() {
       .then(response => {
         return response.json();
       }).then(response => {
-        console.log(response.balance);
+        setMinerBalance(response.balance);
       });
     }, 3000);
 
@@ -31,7 +34,8 @@ function App() {
     <div>
       <h1>PoW Blockchain</h1>
       <div>
-        <span>Balance: </span>
+        <div>Miner Address: {MINER_PUBLIC_KEY}</div>
+        <div>Miner Balance: {minerBalance}</div>
       </div>
     </div>
   );

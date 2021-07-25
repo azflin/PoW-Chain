@@ -2,7 +2,7 @@ const Block = require('./models/Block');
 const Transaction = require('./models/Transaction');
 const UTXO = require('./models/UTXO');
 const db = require('./db');
-const {PUBLIC_KEY} = require('./config');
+const {MINER_PUBLIC_KEY} = require('./config');
 const TARGET_DIFFICULTY = BigInt("0x0" + "F".repeat(63));
 const BLOCK_REWARD = 10;
 
@@ -25,7 +25,7 @@ function mine() {
 
   // TODO: add transactions from the mempool
 
-  const coinbaseUTXO = new UTXO(PUBLIC_KEY, BLOCK_REWARD);
+  const coinbaseUTXO = new UTXO(MINER_PUBLIC_KEY, BLOCK_REWARD);
   const coinbaseTX = new Transaction([], [coinbaseUTXO]);
   block.addTransaction(coinbaseTX);
 
