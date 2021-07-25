@@ -10,7 +10,7 @@ function getBalance() {
     id: 1
   }
 
-  const request = new Request('http://localhost:3032/', {
+  const request = new Request('/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params)
