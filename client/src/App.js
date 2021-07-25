@@ -15,7 +15,9 @@ function App() {
   const [amount, setAmount] = useState();
   const [recipient, setRecipient] = useState();
   const [privateKey, setPrivateKey] = useState();
+  const [error, setError] = useState("");
 
+  // Periodically poll account balances and mempool
   useInterval(() => {
 
     // fetch Miner balance
@@ -75,14 +77,13 @@ function App() {
         setDanBalance(response.balance);
       });
 
-    }, 3000);
+    }, 1000);
 
   function submit(event) {
     event.preventDefault();
     const transaction = {amount, recipient};
     const key = ec.keyFromPrivate(privateKey, 'hex');
     const signature = key.sign(SHA256(JSON.stringify(transaction)).toString());
-    console.log(signature);
     let params = {
       method: "addTransaction",
       params: [transaction, signature.toDER('hex'), key.getPublic().encode('hex')],
@@ -99,6 +100,11 @@ function App() {
         return response.json();
       }).then(response => {
         console.log(response);
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setError("");
+        }
       });
   }
 
@@ -127,6 +133,7 @@ function App() {
         <input id="privateKey" onChange={(event) => setPrivateKey(event.target.value)}></input>&nbsp;
         <button type="submit">Submit</button>
       </form>
+      { error && <span style={{color: "red"}}><strong>ERROR:&nbsp;</strong>{ error }</span>}
     </div>
   );
 }

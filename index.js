@@ -1,6 +1,6 @@
 const {startMining, stopMining} = require('./mine');
-const {PORT} = require('./config');
-const {utxos, blockchain} = require('./db');
+const {PORT, MINER_PRIVATE_KEY, ALLEN_PUBLIC_KEY, DAN_PUBLIC_KEY, MINER_PUBLIC_KEY} = require('./config');
+const {utxos, blockchain, mempool} = require('./db');
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -36,12 +36,17 @@ app.post('/', (req, res) => {
   }
   if(method === 'addTransaction') {
     const [transaction, signature, publicKey] = params;
-    const key = ec.keyFromPublic(publicKey, 'hex');
-    const hash = SHA256(JSON.stringify(transaction)).toString();
-    if(key.verify(hash, signature)) {
-      console.log("Verified signature.");
+    if (![MINER_PUBLIC_KEY, ALLEN_PUBLIC_KEY, DAN_PUBLIC_KEY].includes(publicKey)) {
+      res.status(400).json({error: "Private key was not Miner, Dan, or Allen's."});
+    } else {
+      const key = ec.keyFromPublic(publicKey, 'hex');
+      const hash = SHA256(JSON.stringify(transaction)).toString();
+      if(key.verify(hash, signature)) {
+        mempool.push({...transaction, sender: publicKey});
+        console.log("verified signature");
+      }
+      res.send({message: "addTransaction sanity check."});
     }
-    res.send({message: "addTransaction sanity check."});
   }
 });
 
