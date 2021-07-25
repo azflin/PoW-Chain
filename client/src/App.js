@@ -16,10 +16,10 @@ function App() {
   const [recipient, setRecipient] = useState();
   const [privateKey, setPrivateKey] = useState();
   const [error, setError] = useState("");
+  const [mempool, setMempool] = useState([]);
 
   // Periodically poll account balances and mempool
   useInterval(() => {
-
     // fetch Miner balance
     let params = {
       method: "getBalance",
@@ -77,8 +77,28 @@ function App() {
         setDanBalance(response.balance);
       });
 
+    // fetch mempool
+    params = {
+      method: "getMempool",
+      params: [],
+      jsonrpc: "2.0",
+      id: 1
+    }
+    request = new Request('http://localhost:3032/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    fetch(request)
+      .then(response => {
+        return response.json();
+      }).then(response => {
+        setMempool(response);
+      });
+
     }, 1000);
 
+  // Submit a transaction
   function submit(event) {
     event.preventDefault();
     const transaction = {amount, recipient};
@@ -108,6 +128,15 @@ function App() {
       });
   }
 
+  const mempoolHtml = mempool.map((transaction) => 
+    <div>
+      <div><b>Amount:&nbsp;</b>{transaction.amount}</div>
+      <div><b>Recipient:&nbsp;</b>{transaction.recipient}</div>
+      <div><b>sender:&nbsp;</b>{transaction.sender}</div>
+      <br></br>
+    </div>
+  );
+
   return (
     <div>
       <h1>PoW Blockchain</h1>
@@ -123,7 +152,7 @@ function App() {
       </div>
       <br></br>
       {/* Form to send transactions */}
-      <h3>Form to Send Transactions</h3>
+      <h3>Send Transactions</h3>
       <form onSubmit={submit}>
         <label htmlFor="amount">Amount&nbsp;</label>
         <input id="amount" type="number" onChange={(event) => setAmount(event.target.value)}></input>&nbsp;
@@ -134,6 +163,8 @@ function App() {
         <button type="submit">Submit</button>
       </form>
       { error && <span style={{color: "red"}}><strong>ERROR:&nbsp;</strong>{ error }</span>}
+      <h3>Mempool</h3>
+      <div>{mempoolHtml}</div>
     </div>
   );
 }

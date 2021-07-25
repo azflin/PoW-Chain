@@ -43,10 +43,12 @@ app.post('/', (req, res) => {
       const hash = SHA256(JSON.stringify(transaction)).toString();
       if(key.verify(hash, signature)) {
         mempool.push({...transaction, sender: publicKey});
-        console.log("verified signature");
       }
       res.send({message: "addTransaction sanity check."});
     }
+  }
+  if(method === 'getMempool') {
+    res.send(mempool);
   }
 });
 
