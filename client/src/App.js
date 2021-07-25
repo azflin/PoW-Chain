@@ -2,8 +2,12 @@ import { useState } from 'react';
 import './App.css';
 import useInterval from './hooks/useInterval';
 import { MINER_PUBLIC_KEY, ALLEN_PUBLIC_KEY, DAN_PUBLIC_KEY } from './frontend_config'
+import { ec as EC } from 'elliptic'
+import * as SHA256 from 'crypto-js/sha256'
 
 function App() {
+
+  const ec = new EC('secp256k1');
 
   const [minerBalance, setMinerBalance] = useState(0);
   const [allenBalance, setAllenBalance] = useState(0);
@@ -74,10 +78,28 @@ function App() {
     }, 3000);
 
   function submit(event) {
-    console.log(amount);
-    console.log(recipient);
-    console.log(privateKey);
     event.preventDefault();
+    const transaction = {amount, recipient};
+    const key = ec.keyFromPrivate(privateKey, 'hex');
+    const signature = key.sign(SHA256(JSON.stringify(transaction)).toString());
+    console.log(signature);
+    let params = {
+      method: "addTransaction",
+      params: [transaction, signature.toDER('hex'), key.getPublic().encode('hex')],
+      jsonrpc: "2.0",
+      id: 1
+    }
+    let request = new Request('http://localhost:3032/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    fetch(request)
+      .then(response => {
+        return response.json();
+      }).then(response => {
+        console.log(response);
+      });
   }
 
   return (
