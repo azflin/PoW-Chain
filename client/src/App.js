@@ -37,7 +37,7 @@ function App() {
           return response.json();
         }).then(response => {
           setBalances(prevBalances => {
-            return {...prevBalances, [public_key]: response.balance};
+            return {...prevBalances, [public_key]: parseFloat(response.balance)};
           });
         });
     }
@@ -69,9 +69,15 @@ function App() {
     const transaction = {amount, recipient};
     const key = ec.keyFromPrivate(privateKey, 'hex');
     const signature = key.sign(SHA256(JSON.stringify(transaction)).toString());
+    const publicKey = key.getPublic().encode('hex');
+    // Check the account has enough balance
+    if (parseFloat(amount) > balances[publicKey]) {
+      setError(`${publicKey} has less than ${amount} in their balance.`);
+      return;
+    }
     let params = {
       method: "addTransaction",
-      params: [transaction, signature.toDER('hex'), key.getPublic().encode('hex')],
+      params: [transaction, signature.toDER('hex'), publicKey],
       jsonrpc: "2.0",
       id: 1
     }
