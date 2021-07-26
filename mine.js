@@ -29,7 +29,26 @@ function mine() {
 
   // Add mempool transactions
   db.mempool.forEach((mempoolTX) => {
-    console.log(mempoolTX);
+    let amount = parseFloat(mempoolTX.amount);
+    let transaction = new Transaction([], []);
+    let utxo;
+    let accruedAmount = 0; // Amount accrued by input UTXOs
+    for (let i=0; i<db.utxos.length; i++) {
+      utxo = db.utxos[i];
+      if (utxo.spent == false && utxo.owner == mempoolTX.sender) {
+        accruedAmount += utxo.amount;
+        transaction.inputs.push(utxo);
+        utxo.spent = true;
+      }
+      if (accruedAmount >= amount) break;
+    }
+    // Give recipient a single output UTXO
+    transaction.outputs.push(new UTXO(mempoolTX.recipient, amount));
+    // Have to make change and give sender an output UTXO
+    if (accruedAmount > amount) {
+      transaction.outputs.push(new UTXO(mempoolTX.sender, accruedAmount - amount));
+    }
+    block.addTransaction(transaction);
   });
 
   while(BigInt('0x' + block.hash()) >= TARGET_DIFFICULTY) {
@@ -39,6 +58,11 @@ function mine() {
   block.execute();
 
   db.blockchain.addBlock(block);
+
+  // Clear the mempool
+  while (db.mempool.length) {
+    db.mempool.pop();
+  }
 
   console.log(`Mined block #${db.blockchain.blockHeight()} with a hash of ${block.hash()} at nonce ${block.nonce}`);
 

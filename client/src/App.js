@@ -114,12 +114,12 @@ function App() {
       {/* Balances */}
       <div>
         <h3>Balances</h3>
-        <div>Miner Address: {MINER_PUBLIC_KEY}</div>
-        <div>Miner Balance: {balances[MINER_PUBLIC_KEY]}</div>
-        <div>Allen Address: {ALLEN_PUBLIC_KEY}</div>
-        <div>Miner Balance: {balances[ALLEN_PUBLIC_KEY]}</div>
-        <div>Dan Address: {DAN_PUBLIC_KEY}</div>
-        <div>Dan Balance: {balances[DAN_PUBLIC_KEY]}</div>
+        <div>Miner's Address: {MINER_PUBLIC_KEY}</div>
+        <div>Miner's Balance: {balances[MINER_PUBLIC_KEY]}</div>
+        <div>Allen's Address: {ALLEN_PUBLIC_KEY}</div>
+        <div>Allen's Balance: {balances[ALLEN_PUBLIC_KEY]}</div>
+        <div>Dan's Address: {DAN_PUBLIC_KEY}</div>
+        <div>Dan's Balance: {balances[DAN_PUBLIC_KEY]}</div>
       </div>
       <br></br>
       {/* Form to send transactions */}
