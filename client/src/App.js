@@ -9,9 +9,7 @@ function App() {
 
   const ec = new EC('secp256k1');
 
-  const [minerBalance, setMinerBalance] = useState(0);
-  const [allenBalance, setAllenBalance] = useState(0);
-  const [danBalance, setDanBalance] = useState(0);
+  const [balances, setBalances] = useState({});
   const [amount, setAmount] = useState();
   const [recipient, setRecipient] = useState();
   const [privateKey, setPrivateKey] = useState();
@@ -20,62 +18,29 @@ function App() {
 
   // Periodically poll account balances and mempool
   useInterval(() => {
-    // fetch Miner balance
-    let params = {
-      method: "getBalance",
-      params: [MINER_PUBLIC_KEY],
-      jsonrpc: "2.0",
-      id: 1
-    }
-    let request = new Request('http://localhost:3032/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    });
-    fetch(request)
-      .then(response => {
-        return response.json();
-      }).then(response => {
-        setMinerBalance(response.balance);
+    let params;
+    let request;
+    for (let public_key of [MINER_PUBLIC_KEY, ALLEN_PUBLIC_KEY, DAN_PUBLIC_KEY]) {
+      params = {
+        method: "getBalance",
+        params: [public_key],
+        jsonrpc: "2.0",
+        id: 1
+      }
+      request = new Request('http://localhost:3032/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
       });
-    
-    // fetch Allen balance
-    params = {
-      method: "getBalance",
-      params: [ALLEN_PUBLIC_KEY],
-      jsonrpc: "2.0",
-      id: 1
+      fetch(request)
+        .then(response => {
+          return response.json();
+        }).then(response => {
+          setBalances(prevBalances => {
+            return {...prevBalances, [public_key]: response.balance};
+          });
+        });
     }
-    request = new Request('http://localhost:3032/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    });
-    fetch(request)
-      .then(response => {
-        return response.json();
-      }).then(response => {
-        setAllenBalance(response.balance);
-      });
-
-    // fetch Dan balance
-    params = {
-      method: "getBalance",
-      params: [DAN_PUBLIC_KEY],
-      jsonrpc: "2.0",
-      id: 1
-    }
-    request = new Request('http://localhost:3032/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    });
-    fetch(request)
-      .then(response => {
-        return response.json();
-      }).then(response => {
-        setDanBalance(response.balance);
-      });
 
     // fetch mempool
     params = {
@@ -144,11 +109,11 @@ function App() {
       <div>
         <h3>Balances</h3>
         <div>Miner Address: {MINER_PUBLIC_KEY}</div>
-        <div>Miner Balance: {minerBalance}</div>
+        <div>Miner Balance: {balances[MINER_PUBLIC_KEY]}</div>
         <div>Allen Address: {ALLEN_PUBLIC_KEY}</div>
-        <div>Miner Balance: {allenBalance}</div>
+        <div>Miner Balance: {balances[ALLEN_PUBLIC_KEY]}</div>
         <div>Dan Address: {DAN_PUBLIC_KEY}</div>
-        <div>Dan Balance: {danBalance}</div>
+        <div>Dan Balance: {balances[DAN_PUBLIC_KEY]}</div>
       </div>
       <br></br>
       {/* Form to send transactions */}
