@@ -50,6 +50,9 @@ app.post('/', (req, res) => {
   if(method === 'getMempool') {
     res.send(mempool);
   }
+  if(method === 'getBlocks') {
+    res.send(blockchain.blocks);
+  }
 });
 
 app.listen(PORT, () => {

@@ -15,6 +15,7 @@ function App() {
   const [privateKey, setPrivateKey] = useState();
   const [error, setError] = useState("");
   const [mempool, setMempool] = useState([]);
+  const [blockchain, setBlockchain] = useState([]);
 
   // Periodically poll account balances and mempool
   useInterval(() => {
@@ -59,6 +60,25 @@ function App() {
         return response.json();
       }).then(response => {
         setMempool(response);
+      });
+
+    // fetch blockchain
+    params = {
+      method: "getBlocks",
+      params: [],
+      jsonrpc: "2.0",
+      id: 1
+    }
+    request = new Request('http://localhost:3032/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    fetch(request)
+      .then(response => {
+        return response.json();
+      }).then(response => {
+        setBlockchain(response);
       });
 
     }, 1000);
@@ -108,6 +128,13 @@ function App() {
     </div>
   );
 
+  const blockchainHtml = blockchain.map((block) =>
+    <div>
+      <span>{(new Date(block.timestamp)).toISOString()}&nbsp;</span>
+      <span>{JSON.stringify(block.transactions)}</span>
+    </div>
+  );
+
   return (
     <div>
       <h1>PoW Blockchain</h1>
@@ -136,6 +163,8 @@ function App() {
       { error && <span style={{color: "red"}}><strong>ERROR:&nbsp;</strong>{ error }</span>}
       <h3>Mempool</h3>
       <div>{mempoolHtml}</div>
+      <h3>Blockchain</h3>
+      <div id="blockchain">{blockchainHtml}</div>
     </div>
   );
 }
